@@ -17,17 +17,13 @@ module pipeline_datapath(
 //  PC and Instruction memory - Srage 1
 //============================================================================
 wire [31:0] pc;
+reg branch_stage3;
 wire [31:0] branch_addr;
 reg [31:0]branch_addr_stage3;
 wire stall;
 
-
-
 //Program Counter
 program_counter pc_inst1(.clk(clk),.reset(rst),.branch(branch_taken),.branch_addr(branch_addr),.pc(pc), .pc_stall(stall),.pc_enable(pc_enable));
-
-
-
 
 wire [7:0]addra=pc[9:2];
 assign debug_pc = pc;
@@ -51,7 +47,7 @@ assign debug_instruction = instruction;
 //============================================================================
 always@(posedge clk)
 begin
-if(rst|branch_taken)
+if(rst|branch_taken|branch_stage3)
 instruction_stage2<=32'h0;
 else begin 
 if(stall)
@@ -124,7 +120,9 @@ endcase
 wire [1:0] type_stage2 = instruction_stage2[27:26];
 wire [4:0] shft_amt = instruction_stage2[11:7];
 wire [31:0] se_offset;
-//If type is 2'b10, sign extend the 24-bit offset and shift left by 2, else for LW/SW, sign extend the 12-bit offset and shift left by 2 and Just sign extend for immediate value.
+//If type is 2'b10 for Branch, sign extend the 24-bit offset and shift left by 2, 
+//else if the type is 2'b01 for LW/SW, sign extend the 12-bit offset and shift left by 2 and
+// Just sign extend for immediate value.
 assign se_offset = (type_stage2 == 2'b10) ?
 						 {{6{instruction_stage2[23]}}, instruction_stage2[23:0], 2'b00}:((type_stage2 == 2'b01)?
 						 {{18{instruction_stage2[11]}}, instruction_stage2[11:0],2'b00}:{{20{instruction_stage2[11]}}, instruction_stage2[11:0]});
@@ -218,12 +216,13 @@ always @(posedge clk) begin
         nzcv_flags_stage3 <= 4'b0;
         aluOp_stage3 <= 2'b0;
         aluSrc_stage3 <= 0;
+        branch_stage3 <= 0;
         memWrite_stage3 <= 0;
         memtoReg_stage3 <= 0;
         regWrite_stage3 <= 0;
         cmd_stage3 <= 5'b0;
     end 
-	else if (branch_taken|stall) begin                          
+    else if (stall|branch_taken) begin                          
         wreg_addr_stage3 <= 4'b0;
 		  reg1_addr_stage3 <= 4'b0;
         reg2_addr_stage3 <= 4'b0;
@@ -233,6 +232,7 @@ always @(posedge clk) begin
         nzcv_flags_stage3 <= 4'b0;
         aluOp_stage3 <= 2'b0;
         aluSrc_stage3 <= 0;
+        branch_stage3 <= branch_taken;
         memWrite_stage3 <= 0;
         memtoReg_stage3 <= 0;
         regWrite_stage3 <= 0;
@@ -244,6 +244,7 @@ always @(posedge clk) begin
         reg2_addr_stage3 <= reg2_addr_stage2;
         reg1_data_stage3 <= reg1_data_update;
         reg2_data_stage3 <= reg2_data;
+        branch_stage3<=branch_taken;
         branch_addr_stage3<=branch_addr;
         se_offset_stage3<=se_offset;
         aluOp_stage3 <= aluOp;
