@@ -17,7 +17,6 @@ module pipeline_datapath(
 //  PC and Instruction memory - Srage 1
 //============================================================================
 wire [31:0] pc;
-reg branch_stage3;
 wire [31:0] branch_addr;
 reg [31:0]branch_addr_stage3;
 wire stall;
@@ -219,13 +218,12 @@ always @(posedge clk) begin
         nzcv_flags_stage3 <= 4'b0;
         aluOp_stage3 <= 2'b0;
         aluSrc_stage3 <= 0;
-        branch_stage3 <= 0;
         memWrite_stage3 <= 0;
         memtoReg_stage3 <= 0;
         regWrite_stage3 <= 0;
         cmd_stage3 <= 5'b0;
     end 
-    else if (branch_stage3|stall) begin                          
+	else if (branch_taken|stall) begin                          
         wreg_addr_stage3 <= 4'b0;
 		  reg1_addr_stage3 <= 4'b0;
         reg2_addr_stage3 <= 4'b0;
@@ -235,7 +233,6 @@ always @(posedge clk) begin
         nzcv_flags_stage3 <= 4'b0;
         aluOp_stage3 <= 2'b0;
         aluSrc_stage3 <= 0;
-        branch_stage3 <= 0;
         memWrite_stage3 <= 0;
         memtoReg_stage3 <= 0;
         regWrite_stage3 <= 0;
@@ -247,7 +244,6 @@ always @(posedge clk) begin
         reg2_addr_stage3 <= reg2_addr_stage2;
         reg1_data_stage3 <= reg1_data_update;
         reg2_data_stage3 <= reg2_data;
-        branch_stage3<=branch_taken;
         branch_addr_stage3<=branch_addr;
         se_offset_stage3<=se_offset;
         aluOp_stage3 <= aluOp;
