@@ -47,24 +47,24 @@ case(opcode)
 4'b0000: result=A&B;//AND
 4'b0001: result=A^B;//XOR
 //SUB vs RSUB: SUB is A-B, RSUB is B-A, the flags are different for these two instructions
-4'b0010: begin temp={1'b0,A}-{1'b0,B}; result=temp[63:0]; if(S) begin N=result[63]; Z=(result==64'h0);C=~temp[64]; V=((A[63]!==B[63])&&(result[63]!==A[63])); end end  //SUB
-4'b0011: begin temp={1'b0,B}-{1'b0,A}; result=temp[63:0];if(S) begin N=result[63]; Z=(result==64'h0);C=~temp[64]; V=((A[63]!==B[63])&&(result[63]!==B[63]));end end//RSUB
+4'b0010: begin temp={1'b0,A}-{1'b0,B}; result=temp[63:0]; if(S) begin N=result[63]; Z=(result==64'h0);C=~temp[64]; V=((A[63]!=B[63])&&(result[63]!=A[63])); end end  //SUB
+4'b0011: begin temp={1'b0,B}-{1'b0,A}; result=temp[63:0];if(S) begin N=result[63]; Z=(result==64'h0);C=~temp[64]; V=((A[63]!=B[63])&&(result[63]!=B[63]));end end//RSUB
 //ADD VS ADC: ADD is A+B, ADC is A+B+carry_in, the flags are different for these two instructions
-4'b0100: begin temp={1'b0,A}+{1'b0,B}; result=temp[63:0]; if(S) begin N=result[63]; Z=(result==64'h0); C=temp[64]; V=((A[63]==B[63])&&(result[63]!==A[63])); end end  //ADD
-4'b0101: begin temp={1'b0,A}+{1'b0,B}+flag_in[1]; result=temp[63:0]; if(S) begin N=result[63]; Z=(result==64'h0); C=temp[64]; V=((A[63]==B[63])&&(result[63]!==A[63])); end end//ADDC
+4'b0100: begin temp={1'b0,A}+{1'b0,B}; result=temp[63:0]; if(S) begin N=result[63]; Z=(result==64'h0); C=temp[64]; V=((A[63]==B[63])&&(result[63]!=A[63])); end end  //ADD
+4'b0101: begin temp={1'b0,A}+{1'b0,B}+flag_in[1]; result=temp[63:0]; if(S) begin N=result[63]; Z=(result==64'h0); C=temp[64]; V=((A[63]==B[63])&&(result[63]!=A[63])); end end//ADDC
 //ADC vs SBC: ADC is A+B+carry_in, SBC is A-B-carry_in, the flags are different for these two instructions
-4'b0110: begin temp={1'b0,A}-{1'b0,B}-(~flag_in[1]); result=temp[63:0]; if(S) begin N=result[63]; Z=(result==64'h0); C=temp[64]; V=((A[63]!==B[63])&&(result[63]!==A[63])); end end //SUBC
+4'b0110: begin temp={1'b0,A}-{1'b0,B}-(~flag_in[1]); result=temp[63:0]; if(S) begin N=result[63]; Z=(result==64'h0); C=temp[64]; V=((A[63]!=B[63])&&(result[63]!=A[63])); end end //SUBC
 //SUBC VS RSUBC: SUBC is A-B-carry_in, RSUBC is B-A-carry_in, the flags are different for these two instructions
-4'b0111: begin temp={1'b0,B}-{1'b0,A}-(~flag_in[1]); result=temp[63:0]; if(S) begin N=result[63]; Z=(result==64'h0); C=temp[64]; V=((A[63]!==B[63])&&(result[63]!==B[63])); end end  //RSUBC
+4'b0111: begin temp={1'b0,B}-{1'b0,A}-(~flag_in[1]); result=temp[63:0]; if(S) begin N=result[63]; Z=(result==64'h0); C=temp[64]; V=((A[63]!=B[63])&&(result[63]!=B[63])); end end  //RSUBC
 //TST, TEQ, CMP and CMN are used to update the flags, the result is not written back to register or memory
 4'b1000: begin result=A&B; N=result[63]; Z=(result==64'b0); C=1'b0; V=1'b0; end// TST
 4'b1001: begin result=A^B; N=result[63]; Z=(result==64'b0); C=1'b0; V=1'b0; end// TEQ
 //CMP and CMN are similar to SUB and ADD, but they only update the flags, the result is not written back to register or memory
-4'b1010: begin temp={1'b0,A}-{1'b0,B}; result=A; N=temp[63]; Z=(temp==64'b0); C=temp[64]; V=((A[63]!==B[63])&&(temp[63]!==A[63])); end //CMP
-4'b1011: begin temp={1'b0,A}+{1'b0,B}; result=A; N=temp[63]; Z=(temp==64'b0); C=temp[64]; V=((A[63]==B[63])&&(temp[63]!==A[63])); end  // CMN
+4'b1010: begin temp={1'b0,A}-{1'b0,B}; result=A; N=temp[63]; Z=(temp==64'b0); C=temp[64]; V=((A[63]!=B[63])&&(temp[63]!=A[63])); end //CMP
+4'b1011: begin temp={1'b0,A}+{1'b0,B}; result=A; N=temp[63]; Z=(temp==64'b0); C=temp[64]; V=((A[63]==B[63])&&(temp[63]!=A[63])); end  // CMN
 4'b1100: result=A|B; //OR
 //LSL and MOV: flags are updated based on the result of the shift operation, the carry flag is updated based on the last bit shifted out, the overflow flag is updated based on the last bit shifted out and the original value of A
-4'b1101: begin temp =B << A; result=temp[63:0]; if(S) begin N=result[63]; Z=(result==64'h0); C=temp[64]; V=((A[63]!==temp[63])&&(result[63]!==A[63])); end end//LSL
+4'b1101: begin temp =B << A; result=temp[63:0]; if(S) begin N=result[63]; Z=(result==64'h0); C=temp[64]; V=((A[63]!=temp[63])&&(result[63]!=A[63])); end end//LSL
 4'b1110: result=A&(~B); //BIC
 4'b1111: result=~A; //INV
 endcase
