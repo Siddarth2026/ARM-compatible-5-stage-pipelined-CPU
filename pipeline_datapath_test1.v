@@ -84,10 +84,10 @@ module pipeline_datapath_test1;
 		  instruction=32'he0868007;
 		  #10
 		  instruction_address=8'hb;
-		  instruction=32'he4808001;
+		  instruction=32'he5808001;
 		  #10
 		  instruction_address=8'hc;
-		  instruction=32'he4909001;
+		  instruction=32'he5909001;
 		  #10
 		  instruction_address=8'hd;
 		  instruction=32'he0890005;
