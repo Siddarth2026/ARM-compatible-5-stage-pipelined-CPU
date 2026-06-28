@@ -1,4 +1,5 @@
-#ARM Compatible 5 stage pipelined CPU
+# ARM Compatible 5 stage pipelined CPU
+
 ## Overview
 This repository contains the design and implementation of a **5-stage pipelined CPU** for the ARM ISA. The design implements classic pipelining with hazard detection, data forwarding, and branch resolution.
 
