@@ -118,6 +118,38 @@ The full datapath is organized around four pipeline register boundaries — **IF
 - **Per-pipeline NZCV flag register**, updated only by instructions that set flags
 - **Aligned writeback path**, with load data correctly registered and aligned with the writeback mux
 
+## Repository Modules Overview
+ 
+This repository contains all hardware modules required to implement the 5-stage ARM pipeline. Each file contributes to a specific stage of the fetch, decode, execute, memory, or writeback flow.
+ 
+### IF — Instruction Fetch
+ 
+- **`program_counter.v`** — The PC register. Tracks the current instruction address, advances on each cycle, and is redirected on a taken branch or held during a stall.
+- **`imem1.v` / `imem1.xco`** — Instruction memory. Stores the program instructions fetched by the PC; the `.xco` file is the Xilinx CORE Generator configuration for the underlying block RAM.
+### ID — Decode
+ 
+- **`control_unit.v`** — Instruction decode and control signal generation. Decodes the opcode/condition fields and drives the control signals (register write, memory read/write, ALU operation select, etc.) used throughout the rest of the pipeline.
+- **`register_file.v`** — The general-purpose register file (CRF). Provides two read ports for operand access and a write port for writeback.
+- **`HDU.v`** — Hazard detection unit. Detects load-use hazards between the ID and EX stages and asserts the pipeline stall.
+### EX — Execute
+ 
+- **`ALU.v`** — The arithmetic/logic unit. Executes the data-processing operations and produces the NZCV condition flags.
+- **`FU.v`** — Forwarding unit. Resolves RAW data hazards by forwarding EX/MEM and MEM/WB results back into the EX stage operand muxes.
+- **`FMP.v`** — Forwarding mux / pipeline support logic used alongside the forwarding unit to select between register file outputs and forwarded values.
+- **`mux4to1.v`** — General-purpose 4-to-1 multiplexer used in operand/data selection paths in the EX stage.
+### MEM — Memory
+ 
+- **`dmem.v` / `dmem.xco`** — Data memory. Services loads and stores; the `.xco` file is the Xilinx CORE Generator configuration for the underlying block RAM.
+### WB — Writeback
+ 
+- Writeback is handled by the final mux inside **`pipeline_datapath.v`**, which selects between the ALU result and the loaded memory value before driving the register file's write port in **`register_file.v`**.
+### Top-Level Integration
+ 
+- **`pipeline_datapath.v`** — The top-level pipeline module. Instantiates and connects every stage (IF, ID, EX, MEM, WB) along with the HDU, FU, and pipeline registers (IF/ID, ID/EX, EX/MEM, MEM/WB) into the complete datapath.
+### Testbench
+ 
+- **`pipeline_datapath_test1.v`** — Testbench for `pipeline_datapath.v`. Exercises the full pipeline, including instruction fetch/decode/execute, hazard stalling, forwarding, and branch resolution.
+
 
 
 
