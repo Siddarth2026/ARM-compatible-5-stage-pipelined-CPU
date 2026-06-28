@@ -124,31 +124,39 @@ This repository contains all hardware modules required to implement the 5-stage 
  
 ### IF — Instruction Fetch
  
-- **`program_counter.v`** — The PC register. Tracks the current instruction address, advances on each cycle, and is redirected on a taken branch or held during a stall.
+* **`program_counter.v`** — Implements the program counter (PC). The `PC_enable` signal enables PC updates, while `PC_stall` freezes the PC during hazards detected by the HDU. When a branch is taken, the PC is updated with the `Branch_address`; otherwise, it advances to the next sequential instruction.
+
 - **`imem1.v` / `imem1.xco`** — Instruction memory. Stores the program instructions fetched by the PC; the `.xco` file is the Xilinx CORE Generator configuration for the underlying block RAM.
+
 ### ID — Decode
  
-- **`control_unit.v`** — Instruction decode and control signal generation. Decodes the opcode/condition fields and drives the control signals (register write, memory read/write, ALU operation select, etc.) used throughout the rest of the pipeline.
-- **`register_file.v`** — The general-purpose register file (CRF). Provides two read ports for operand access and a write port for writeback.
+- **`control_unit.v`** — Instruction decode and control signal generation. Decodes the opcode/condition fields and drives the control signals (register write, memory write, ALU opcodes, mem2reg select, and ALU src select, etc.) used throughout the rest of the pipeline.
+- **`register_file.v`** — The general-purpose register file (RF). Provides two read ports for operands and a writeback port.
 - **`HDU.v`** — Hazard detection unit. Detects load-use hazards between the ID and EX stages and asserts the pipeline stall.
+- 
 ### EX — Execute
  
-- **`ALU.v`** — The arithmetic/logic unit. Executes the data-processing operations and produces the NZCV condition flags.
+* **`ALU.v`** — Implements the arithmetic logic unit (ALU). It performs arithmetic and logical operations specified by `ALU_OP`, generates the `NZCV` condition flags, and computes effective addresses for data memory during load and store operations.
+
 - **`FU.v`** — Forwarding unit. Resolves RAW data hazards by forwarding EX/MEM and MEM/WB results back into the EX stage operand muxes.
-- **`FMP.v`** — Forwarding mux / pipeline support logic used alongside the forwarding unit to select between register file outputs and forwarded values.
-- **`mux4to1.v`** — General-purpose 4-to-1 multiplexer used in operand/data selection paths in the EX stage.
+- 
+- **`FMP.v`** — Forwarding mux is used alongside the forwarding unit to select between register file outputs and forwarded values.
+
+- 
 ### MEM — Memory
  
-- **`dmem.v` / `dmem.xco`** — Data memory. Services loads and stores; the `.xco` file is the Xilinx CORE Generator configuration for the underlying block RAM.
+- **`dmem.v` / `dmem.xco`** — Data memory. Mainly used for loads and stores; the `.xco` file is the Xilinx CORE Generator configuration for the underlying block RAM.
+- 
 ### WB — Writeback
  
-- Writeback is handled by the final mux inside **`pipeline_datapath.v`**, which selects between the ALU result and the loaded memory value before driving the register file's write port in **`register_file.v`**.
+- Writeback is handled by the final mux inside **`pipeline_datapath.v`**, which selects between the ALU result and the load memory value before driving the register file's write port in **`register_file.v`**.
 ### Top-Level Integration
  
 - **`pipeline_datapath.v`** — The top-level pipeline module. Instantiates and connects every stage (IF, ID, EX, MEM, WB) along with the HDU, FU, and pipeline registers (IF/ID, ID/EX, EX/MEM, MEM/WB) into the complete datapath.
 ### Testbench
  
-- **`pipeline_datapath_test1.v`** — Testbench for `pipeline_datapath.v`. Exercises the full pipeline, including instruction fetch/decode/execute, hazard stalling, forwarding, and branch resolution.
+* **`pipeline_datapath_test1.v`** — Testbench for `pipeline_datapath.v`. Verifies the functionality of the pipelined datapath by testing the supported ISA instructions, hazard detection (HDU), data forwarding (FU), and branch operations.
+
 
 
 
