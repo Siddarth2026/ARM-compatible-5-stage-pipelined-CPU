@@ -133,20 +133,20 @@ This repository contains all hardware modules required to implement the 5-stage 
 - **`control_unit.v`** — Instruction decode and control signal generation. Decodes the opcode/condition fields and drives the control signals (register write, memory write, ALU opcodes, mem2reg select, and ALU src select, etc.) used throughout the rest of the pipeline.
 - **`register_file.v`** — The general-purpose register file (RF). Provides two read ports for operands and a writeback port.
 - **`HDU.v`** — Hazard detection unit. Detects load-use hazards between the ID and EX stages and asserts the pipeline stall.
-- 
+  
 ### EX — Execute
  
 * **`ALU.v`** — Implements the arithmetic logic unit (ALU). It performs arithmetic and logical operations specified by `ALU_OP`, generates the `NZCV` condition flags, and computes effective addresses for data memory during load and store operations.
 
 - **`FU.v`** — Forwarding unit. Resolves RAW data hazards by forwarding EX/MEM and MEM/WB results back into the EX stage operand muxes.
-- 
+ 
 - **`FMP.v`** — Forwarding mux is used alongside the forwarding unit to select between register file outputs and forwarded values.
 
-- 
+ 
 ### MEM — Memory
  
 - **`dmem.v` / `dmem.xco`** — Data memory. Mainly used for loads and stores; the `.xco` file is the Xilinx CORE Generator configuration for the underlying block RAM.
-- 
+ 
 ### WB — Writeback
  
 - Writeback is handled by the final mux inside **`pipeline_datapath.v`**, which selects between the ALU result and the load memory value before driving the register file's write port in **`register_file.v`**.
